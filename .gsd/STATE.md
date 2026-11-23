@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-23T23:13:00+05:30
+updated: 2026-11-23T23:16:00+05:30
 ---
 
 # Project State
@@ -13,27 +13,25 @@ updated: 2026-11-23T23:13:00+05:30
 
 ## Last Action
 
-Project initialized via `/new-project`:
-- SPEC.md authored and marked `FINALIZED`
-- REQUIREMENTS.md established with 9 functional & 4 non-functional requirements
-- ROADMAP.md created across 5 strategic phases
-- Architecture Decision Records (ADRs) logged for EVM architecture and two-step custody
+Blueprint integrated into GSD specifications:
+- Updated `.gsd/SPEC.md` with complete Group 18 research blueprint specifications.
+- Updated `.gsd/REQUIREMENTS.md` with 11 functional requirements (including Evidence Integrity Passport and BSA Section 63 export).
+- Updated `.gsd/ROADMAP.md` incorporating the full 5-phase lifecycle and acceptance criteria.
+- Logged ADR `DECISION-004` (Evidence Integrity Passport & BSA 2023 Alignment) in `DECISIONS.md`.
 
 ## Next Steps
 
-1. Run `/plan 1` to generate Phase 1 execution plans (Hardhat setup, AccessControl, and Evidence Registration contracts)
-2. Execute Plan 1.1 in Wave 1
-3. Run automated tests to verify initial smart contract foundation
+1. Run `/plan 1` to generate Phase 1 execution plans (Hardhat environment setup, OpenZeppelin AccessControl, and Evidence Registration contracts).
+2. Execute Phase 1 plans with atomic commits and test verification.
 
 ## Active Decisions
 
-Decisions made that affect current work:
-
 | Decision | Choice | Made | Affects |
 |----------|--------|------|---------|
-| DECISION-001 | EVM / Solidity Private Permissioned Network with Hardhat | 2026-11-23 | Phase 1-5 |
-| DECISION-002 | Hybrid Architecture (On-chain Hashes + Off-chain Evidence Vault) | 2026-11-23 | Phase 1, 3, 4 |
-| DECISION-003 | Two-Step Custody Handover Protocol | 2026-11-23 | Phase 2, 4 |
+| DECISION-001 | EVM / Solidity Private Consortium Network with Hardhat + Adapter | 2026-11-23 | Phase 1-5 |
+| DECISION-002 | Hybrid Architecture (On-chain Hashes + Off-chain Vault) | 2026-11-23 | Phase 1, 3, 4 |
+| DECISION-003 | Two-Party Custody Handover Protocol | 2026-11-23 | Phase 2, 4 |
+| DECISION-004 | Evidence Integrity Passport & BSA 2023 Section 63 Alignment | 2026-11-23 | Phase 4, 5 |
 
 ## Blockers
 
@@ -41,8 +39,8 @@ None.
 
 ## Concerns
 
-- Ensure Windows path handling and line endings are treated consistently in Node.js / Hardhat scripts.
+- Ensure clean decoupling in the blockchain adapter layer so local EVM smart contracts cleanly mirror the recommended chaincode interfaces.
 
 ## Session Context
 
-Project initialized cleanly from user requirements. Environment validated: Node.js v24.11.1 installed; git initialized. Ready to begin Phase 1.
+Group 18 blueprint integrated successfully. Ready to proceed to `/plan 1`.

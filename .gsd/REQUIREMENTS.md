@@ -1,12 +1,12 @@
 ---
 milestone: v1.0
-updated: 2026-11-23T23:13:00+05:30
+updated: 2026-11-23T23:16:00+05:30
 ---
 
 # Requirements
 
 ## Overview
-Requirements derived from SPEC.md for traceability and coverage tracking of the Blockchain-Based Digital Evidence Chain-of-Custody System.
+Functional, non-functional, and technical requirements aligned with the Group 18 Digital Evidence Chain of Custody research blueprint and SPEC.md.
 
 ---
 
@@ -14,15 +14,17 @@ Requirements derived from SPEC.md for traceability and coverage tracking of the 
 
 | ID | Requirement | Source | Phase | Status |
 |----|-------------|--------|-------|--------|
-| REQ-01 | **Role-Based Access Control (RBAC)**: Smart contract implements OpenZeppelin AccessControl with Admin, Investigator, Custodian, and Auditor roles. | SPEC Goal 2 | 1 | Pending |
-| REQ-02 | **Evidence Registration**: Authorized investigators can register digital evidence with SHA-256 hash, case ID, evidence description, file size, MIME type, and initial custodian. | SPEC Goal 1 | 1 | Pending |
-| REQ-03 | **Two-Step Custody Transfer Protocol**: Current custodian can initiate a transfer to a designated recipient; recipient must accept before custody changes. Current custodian can cancel before acceptance. | SPEC Goal 3 | 2 | Pending |
-| REQ-04 | **Immutable Audit & Timestamp Logs**: Every state change emits blockchain events with block timestamps, block numbers, transaction hashes, and actor addresses. | SPEC Goal 4 | 2 | Pending |
-| REQ-05 | **Cryptographic Integrity Verification**: Contract and client verification functions compare calculated SHA-256 file hashes against on-chain recorded hashes to identify valid vs. tampered evidence. | SPEC Goal 5 | 2 | Pending |
-| REQ-06 | **Evidence Vault & Off-Chain Storage**: Secure local off-chain storage layer for evidence files with hash verification before retrieval. | SPEC Non-Goals / Architecture | 3 | Pending |
-| REQ-07 | **Full-Stack Investigator Dashboard**: Responsive React web application supporting wallet connection, role-based navigation, evidence registration form, and custody transfer management. | SPEC Goal 6 | 4 | Pending |
-| REQ-08 | **Verification Portal & Audit Timeline View**: Public / auditor-accessible UI to drag-and-drop evidence files for instant integrity verification and interactive visual custody timeline. | SPEC Goal 6 | 4 | Pending |
-| REQ-09 | **Automated Test Suite & Mock Data Generator**: Comprehensive Hardhat test suite (>90% coverage) and automated script seeding realistic digital forensics scenarios. | SPEC Success Criteria | 5 | Pending |
+| REQ-01 | **RBAC Contract & Permissions**: Deploy `EvidenceChainOfCustody.sol` with OpenZeppelin AccessControl supporting `ADMIN_ROLE`, `COLLECTOR_ROLE`, `CUSTODIAN_ROLE`, `EXAMINER_ROLE`, and `AUDITOR_ROLE`. | Blueprint §5, §7 | 1 | Pending |
+| REQ-02 | **Evidence Registration & Metadata Model**: Register evidence on-chain with unique `evidenceId`, `caseId`, `sha256` digest, `fileSize`, `mediaType`, `storageObjectId`, `collectorId`, `organizationId`, `collectedAt`, `location`, `acquisitionMethod`, `toolVersion`, and optional `parentEvidenceId`. | Blueprint §4.2, §7 | 1 | Pending |
+| REQ-03 | **Two-Party Custody Transfer Protocol**: Implement `proposeTransfer` (custodian only), `acceptTransfer` (designated recipient only), and `rejectTransfer` / `cancelTransfer`. Record transitions without unilateral reassignments. | Blueprint §6, §7 | 2 | Pending |
+| REQ-04 | **Multi-Action Immutable Event Ledger**: Emit structured blockchain events (`EvidenceRegistered`, `TransferProposed`, `TransferAccepted`, `TransferRejected`, `AccessRecorded`, `IntegrityChecked`) with block and application timestamps. | Blueprint §7, App. A | 2 | Pending |
+| REQ-05 | **Independent Cryptographic Verification Engine**: Compare newly computed SHA-256 file digests against the registered on-chain baseline. Record `PASS` or `MISMATCH` events immutably to the ledger. | Blueprint §4.1, §8 | 2 | Pending |
+| REQ-06 | **Off-Chain Encrypted Evidence Vault & Streaming Hashing**: Node.js backend streaming file upload service that computes SHA-256 in-flight via Node `crypto` and stores files securely with opaque `storageObjectId` keys. | Blueprint §3.1, §4.3 | 3 | Pending |
+| REQ-07 | **REST API & Blockchain Adapter Layer**: Express API endpoints (`/api/cases`, `/api/evidence`, `/api/evidence/:id/transfers`, `/api/evidence/:id/verify`, `/api/cases/:id/audit-report`) abstracting contract interactions via an extensible adapter. | Blueprint §9, §10 | 3 | Pending |
+| REQ-08 | **Evidence Integrity Passport Web Dashboard**: Responsive React/Tailwind frontend displaying evidence details, current custodian, interactive custody history timeline, and verification logs. | Blueprint §8, §14 | 4 | Pending |
+| REQ-09 | **Two-Party Handover Management & Verification Portal**: Web UI for proposing/accepting custody handovers, plus drag-and-drop file verification with instant visual `MATCH` or `MISMATCH` feedback. | Blueprint §6, §8 | 4 | Pending |
+| REQ-10 | **Audit Report & BSA Section 63 Legal Export**: Exportable audit report containing full chronological chain of custody, hash records, tool versions, and system timestamps for judicial review. | Blueprint §10, §13 | 4 | Pending |
+| REQ-11 | **Automated Test Suite & Tamper Demonstration**: Hardhat unit/integration tests and an automated end-to-end demo script proving regular flow, two-party transfer, byte-level tamper detection, and unauthorized access rejection. | Blueprint §11, §16 | 5 | Pending |
 
 ---
 
@@ -30,20 +32,11 @@ Requirements derived from SPEC.md for traceability and coverage tracking of the 
 
 | ID | Requirement | Category | Phase | Status |
 |----|-------------|----------|-------|--------|
-| NFR-01 | **Zero-Docker Windows Native Execution**: Hardhat EVM local node running seamlessly on Windows with Node.js. | Portability | 1 | Pending |
-| NFR-02 | **Cryptographic Security**: Industry-standard SHA-256 hashing and ECDSA digital signatures preventing unauthorized modifications. | Security | 1, 2 | Pending |
-| NFR-03 | **Sub-Second Client Hashing & Verification**: In-browser streaming SHA-256 calculation capable of processing files rapidly without freezing UI. | Performance | 4 | Pending |
-| NFR-04 | **Modern, Intuitive Forensic UI**: Polished, professional dashboard adhering to evidence management standards with clear status badges and audit trails. | Usability | 4 | Pending |
-
----
-
-## Constraints
-
-| ID | Constraint | Source | Impact |
-|----|------------|--------|--------|
-| CON-01 | No Docker dependency available on host machine | Host Environment | Architecture must utilize native Node.js / Hardhat EVM |
-| CON-02 | Large raw files cannot be written directly into blockchain state | Blockchain Economics | Hybrid model: on-chain hashes + metadata, off-chain file vault |
-| CON-03 | AccessControl must strictly govern sensitive operations | Legal Admissibility | Evidence registration and transfer restricted to validated roles |
+| NFR-01 | **Windows Native Execution**: Zero Docker runtime requirement; executes completely via Node.js v24 and Hardhat local EVM. | Portability | 1 | Pending |
+| NFR-02 | **Streaming Memory Safety**: Use streaming SHA-256 calculation so large files do not exhaust Node.js heap memory. | Performance | 3 | Pending |
+| NFR-03 | **Sub-Second Tamper Detection**: Instant hash recalculation and contract baseline lookup providing rapid feedback. | Responsiveness | 2, 4 | Pending |
+| NFR-04 | **Privacy-First Data Isolation**: No sensitive case details, raw evidence files, or PII stored unencrypted on-chain. | Security & Privacy | 1, 3 | Pending |
+| NFR-05 | **Audit Defensibility**: Clear separation between technical hash matching and legal admissibility claims. | Compliance | 4 | Pending |
 
 ---
 
@@ -51,12 +44,8 @@ Requirements derived from SPEC.md for traceability and coverage tracking of the 
 
 | Requirement | Plans | Tests | Status |
 |-------------|-------|-------|--------|
-| REQ-01 | 1.1 | TestAccessControl.js | Pending |
-| REQ-02 | 1.2 | TestEvidenceRegistration.js | Pending |
-| REQ-03 | 2.1 | TestCustodyTransfer.js | Pending |
-| REQ-04 | 2.2 | TestAuditLogs.js | Pending |
-| REQ-05 | 2.3 | TestIntegrityVerification.js | Pending |
-| REQ-06 | 3.1 | TestEvidenceVault.js | Pending |
-| REQ-07 | 4.1 | Component & E2E tests | Pending |
-| REQ-08 | 4.2 | Verification UI tests | Pending |
-| REQ-09 | 5.1 | Hardhat E2E Suite | Pending |
+| REQ-01, REQ-02 | Plan 1.1, 1.2 | `test/EvidenceRegistration.test.js` | Pending |
+| REQ-03, REQ-04, REQ-05 | Plan 2.1, 2.2 | `test/CustodyAndVerification.test.js` | Pending |
+| REQ-06, REQ-07 | Plan 3.1, 3.2 | `test/VaultAndApi.test.js` | Pending |
+| REQ-08, REQ-09, REQ-10 | Plan 4.1, 4.2 | Frontend verification suite | Pending |
+| REQ-11 | Plan 5.1, 5.2 | Full Lifecycle E2E Demo | Pending |

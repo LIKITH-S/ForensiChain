@@ -5,55 +5,55 @@
 > ⚠️ **Planning Lock**: No code may be written until this spec is marked `FINALIZED`.
 
 ## Vision
-Design and build a decentralized, blockchain-backed digital evidence chain-of-custody platform that guarantees the integrity, authenticity, and non-repudiation of digital evidence from initial collection to courtroom presentation. By leveraging cryptographic SHA-256 hashing, smart-contract-enforced investigator role-based authorization, two-step custody transfer handovers, and timestamped immutable event logs on an EVM network, forensic investigators and judicial authorities can instantaneously detect unauthorized alterations and comprehensively audit custody history.
+Design and build a permissioned, blockchain-backed digital evidence chain-of-custody platform that guarantees the integrity, authenticity, and non-repudiation of digital evidence from collection to courtroom presentation. By combining an off-chain encrypted evidence vault with on-chain cryptographic proofs (SHA-256 digests, comprehensive forensic metadata, role-based investigator authorization, two-party custody handovers, and immutable event logs), the system empowers forensic investigators, custodians, examiners, and judicial supervisors to detect unauthorized alterations and audit complete custody history.
 
 ## Goals
-1. **Cryptographic Evidence Hashing & Registration** — Securely register digital evidence with client-calculated SHA-256 hashes, comprehensive forensic metadata (case ID, evidence ID, description, file size, MIME type, collector ID), and immutable block timestamps.
-2. **Investigator Authorization & Role-Based Access Control** — Enforce role-based permissions (`DEFAULT_ADMIN_ROLE`, `INVESTIGATOR_ROLE`, `CUSTODIAN_ROLE`, `AUDITOR_ROLE`) using OpenZeppelin AccessControl to ensure only vetted personnel can log or transfer evidence.
-3. **Two-Step Custody Transfer Protocol** — Prevent accidental or unauthorized custody changes through a secure two-phase workflow: the current custodian initiates the transfer to an authorized recipient, and the recipient explicitly accepts custody after physical/digital handover verification.
-4. **Immutable Timestamped Audit Logs** — Emit structured blockchain events (`EvidenceRegistered`, `TransferInitiated`, `TransferAccepted`, `TransferCancelled`, `EvidenceVerified`, `AccessAudited`) providing an unalterable, chronological ledger of all evidence interactions.
-5. **Evidence Integrity Verification Engine** — Allow any authorized investigator, defense attorney, or judicial auditor to upload or re-hash a digital file and cryptographically compare it against the on-chain root of trust, flagging any byte-level tampering or corruption.
-6. **Full-Stack Web Application & Audit Dashboard** — Deliver a responsive, intuitive web dashboard (React / Vite + Tailwind CSS + Ethers.js) featuring evidence onboarding, interactive custody transfer management, integrity verification, and visual timeline inspection.
+1. **Cryptographic Evidence Hashing & Off-Chain Vault Storage (Hybrid Architecture)**:
+   - Stream files to an encrypted off-chain storage layer while computing SHA-256 digests in-flight.
+   - Store only the cryptographic fingerprint, opaque `storageObjectId`, and forensic metadata on-chain.
+   - Record comprehensive forensic attributes: `evidenceId`, `caseId`, `sha256`, `fileSize`, `mediaType`, `collectorId`, `organizationId`, `collectedAt`, `location`, `acquisitionMethod`, `toolVersion`, and optional `parentEvidenceId` (for derivative copies).
+
+2. **Granular Role-Based Access Control (RBAC)**:
+   - Enforce distinct institutional roles: `ADMINISTRATOR` (system & user management), `COLLECTOR` (intake & registration), `CUSTODIAN` (physical/digital storage & transfers), `EXAMINER` (analysis & verification), and `AUDITOR` / `SUPERVISOR` (read-only audit & reporting).
+   - Require backend authentication and smart contract verification for all state-changing actions.
+
+3. **Two-Party Custody Transfer Protocol**:
+   - Replace unilateral reassignments with a mutual two-step workflow: Current custodian proposes a transfer specifying recipient and reason &rarr; Designated recipient authenticates and explicitly accepts or rejects.
+   - Retain rejected, cancelled, or expired transfer attempts as immutable historical events.
+
+4. **Immutable Multi-Event Audit Logging**:
+   - Capture rich audit events on-chain: `EVIDENCE_REGISTERED`, `TRANSFER_PROPOSED`, `TRANSFER_ACCEPTED`, `TRANSFER_REJECTED`, `ACCESS_RECORDED`, and `INTEGRITY_VERIFIED`.
+   - Record dual timestamps (application-supplied explicit ISO timestamp + block timestamp) and correlation IDs.
+
+5. **Independent Integrity Verification & Tamper Detection**:
+   - On-demand re-hashing of stored or re-uploaded files against the on-chain baseline digest.
+   - Record both `PASS` (match) and `MISMATCH` (tampered) verification events immutably to the ledger.
+   - Clear UI messaging affirming *"Hash matches registered baseline"* without false claims of automatic legal admissibility.
+
+6. **Evidence Integrity Passport & Legal Audit Export**:
+   - Provide an "Evidence Integrity Passport" view for every evidence item: baseline hash, custody timeline, current custodian, verification history, and derivative lineage.
+   - Export structured audit reports (JSON / formatted export) supporting Indian legal evidentiary standards (Bharatiya Sakshya Adhiniyam, 2023 / BSA Section 63 electronic record certification details: device info, hash, timestamp, acquisition tool, and custody logs).
+
+7. **Full-Stack Application & Clean Blockchain Adapter**:
+   - Modern React + Tailwind CSS dashboard with role-specific views.
+   - Node.js + Express API server with streaming upload and blockchain adapter.
+   - Solidity smart contract deployed to a local private EVM network (Hardhat), architected with an adapter interface that enables seamless future transition to Hyperledger Fabric.
 
 ## Non-Goals (Out of Scope)
-- Storing multi-gigabyte raw binary forensic disk images directly on the blockchain ledger (hybrid model: off-chain secure evidence vault with cryptographic SHA-256 hashes anchored on-chain).
-- Hardware security module (HSM) or smart card biometric PKI integration (standard Web3 wallet / private key signatures suffice for v1.0).
-- Cross-chain bridging or public mainnet tokenomics (runs on a zero-gas, high-throughput private/consortium EVM environment).
+- Storing raw multi-gigabyte disk images or sensitive personally identifiable information (PII) directly on the blockchain ledger.
+- Hardware Security Module (HSM) or biometric smart card PKI (software Web3 keypairs and JWT session credentials are used for prototype).
+- Claiming automatic court admissibility (the system provides forensic integrity proof and supporting certificates; admissibility remains a judicial determination).
 
 ## Constraints
-- **Environment**: 100% native execution on Windows using Node.js and Hardhat local EVM node (zero external Docker dependency).
-- **Smart Contract Standards**: Solidity ^0.8.20 adhering to OpenZeppelin AccessControl and clean reentrancy/gas optimization principles.
-- **Frontend Architecture**: React with Vite, Tailwind CSS, Lucide icons, and Ethers.js v6 for direct contract interaction.
+- **Host Environment**: 100% native execution on Windows using Node.js v24+ and Hardhat local EVM node (zero external Docker dependency).
+- **Security Standard**: NIST FIPS PUB 180-4 SHA-256 for cryptographic digests.
+- **Smart Contract Standards**: Solidity ^0.8.20 with OpenZeppelin AccessControl.
+- **Legal Alignment**: Preservation of electronic evidence attributes compatible with BSA 2023 (Sections 61–63).
 
 ## Success Criteria
-- [ ] Smart contracts compile cleanly without warnings and pass comprehensive automated test suites covering all role checks, edge cases, and transfer flows.
-- [ ] Evidence hash matching accurately returns `VALID` for authentic files and `TAMPERED` for files with even a single bit modified.
-- [ ] Custody cannot be transferred without explicit authorization and two-step recipient acceptance.
-- [ ] Complete chronological custody history and access audit logs can be queried and visually rendered for any registered evidence.
-- [ ] Full-stack web application runs locally and allows end-to-end evidence registration, handover, and verification workflows.
-
-## User Stories
-
-### As a Forensic Investigator
-- I want to register newly seized digital evidence with its SHA-256 hash and metadata on the blockchain.
-- So that an unalterable proof of original existence and state is permanently established.
-
-### As an Evidence Custodian / Laboratory Manager
-- I want to initiate a custody transfer to a specific forensic analyst and have them confirm acceptance.
-- So that custody transitions are strictly mutual, non-repudiable, and timestamped.
-
-### As a Judicial Auditor / Defense Counsel
-- I want to re-hash an evidence file and verify it against the on-chain hash, reviewing the complete chain-of-custody timeline.
-- So that I can independently prove evidence integrity and admissibility in court.
-
-## Technical Requirements
-
-| Requirement | Priority | Notes |
-|-------------|----------|-------|
-| Role-Based Access Control (Admin, Investigator, Custodian, Auditor) | Must-have | OpenZeppelin AccessControl |
-| Evidence Registration with SHA-256 Hash & Metadata | Must-have | Emits `EvidenceRegistered` event |
-| Two-Step Custody Handover (Initiate & Accept) | Must-have | Prevents unilateral reassignments |
-| On-Chain Integrity Verification Method | Must-have | Pure/View contract function and client verifier |
-| Access Audit & History Retrieval | Must-have | Queryable custody transfer history and events |
-| Web Dashboard (React + Ethers.js) | Must-have | Modern UI with MetaMask / Local Account support |
-| Off-chain file storage simulation | Should-have | Local vault storage with hash cross-check |
+- [ ] Smart contract `EvidenceChainOfCustody.sol` compiles cleanly and passes automated tests covering role checks, custody states, and tamper verifications.
+- [ ] Uploading a file streams SHA-256, stores the file off-chain, and anchors the evidence metadata on-chain.
+- [ ] Transferring custody requires proposal by custodian and explicit acceptance by the designated recipient; third-party acceptance is rejected.
+- [ ] Verification of an unmodified file returns `MATCH` (`PASS`); altering a single byte in the file returns `MISMATCH` and logs an on-chain alert.
+- [ ] Access attempts, transfers, and verifications appear chronologically in the Evidence Integrity Passport timeline.
+- [ ] Case-level audit reports can be exported with complete provenance and BSA-compliant electronic record metadata.
