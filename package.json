@@ -1,0 +1,18 @@
+{
+  "name": "blockchain-evidence-chain-of-custody",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tamper-Evident Evidence Chain-of-Custody Smart Contract System",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^7.0.0",
+    "@openzeppelin/contracts": "^5.6.1",
+    "chai": "^6.3.0",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.22.0"
+  }
+}
