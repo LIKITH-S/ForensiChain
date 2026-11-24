@@ -14,8 +14,8 @@ Functional, non-functional, and technical requirements aligned with the Group 18
 
 | ID | Requirement | Source | Phase | Status |
 |----|-------------|--------|-------|--------|
-| REQ-01 | **RBAC Contract & Permissions**: Deploy `EvidenceChainOfCustody.sol` with OpenZeppelin AccessControl supporting `ADMIN_ROLE`, `COLLECTOR_ROLE`, `CUSTODIAN_ROLE`, `EXAMINER_ROLE`, and `AUDITOR_ROLE`. | Blueprint §5, §7 | 1 | Pending |
-| REQ-02 | **Evidence Registration & Metadata Model**: Register evidence on-chain with unique `evidenceId`, `caseId`, `sha256` digest, `fileSize`, `mediaType`, `storageObjectId`, `collectorId`, `organizationId`, `collectedAt`, `location`, `acquisitionMethod`, `toolVersion`, and optional `parentEvidenceId`. | Blueprint §4.2, §7 | 1 | Pending |
+| REQ-01 | **RBAC Contract & Permissions**: Deploy `EvidenceChainOfCustody.sol` with OpenZeppelin AccessControl supporting `ADMIN_ROLE`, `COLLECTOR_ROLE`, `CUSTODIAN_ROLE`, `EXAMINER_ROLE`, and `AUDITOR_ROLE`. | Blueprint §5, §7 | 1 | Complete |
+| REQ-02 | **Evidence Registration & Metadata Model**: Register evidence on-chain with unique `evidenceId`, `caseId`, `sha256` digest, `fileSize`, `mediaType`, `storageObjectId`, `collectorId`, `organizationId`, `collectedAt`, `location`, `acquisitionMethod`, `toolVersion`, and optional `parentEvidenceId`. | Blueprint §4.2, §7 | 1 | Complete |
 | REQ-03 | **Two-Party Custody Transfer Protocol**: Implement `proposeTransfer` (custodian only), `acceptTransfer` (designated recipient only), and `rejectTransfer` / `cancelTransfer`. Record transitions without unilateral reassignments. | Blueprint §6, §7 | 2 | Pending |
 | REQ-04 | **Multi-Action Immutable Event Ledger**: Emit structured blockchain events (`EvidenceRegistered`, `TransferProposed`, `TransferAccepted`, `TransferRejected`, `AccessRecorded`, `IntegrityChecked`) with block and application timestamps. | Blueprint §7, App. A | 2 | Pending |
 | REQ-05 | **Independent Cryptographic Verification Engine**: Compare newly computed SHA-256 file digests against the registered on-chain baseline. Record `PASS` or `MISMATCH` events immutably to the ledger. | Blueprint §4.1, §8 | 2 | Pending |

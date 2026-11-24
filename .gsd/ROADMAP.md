@@ -27,14 +27,17 @@ updated: 2026-11-23T23:16:00+05:30
 ## Phases
 
 ### Phase 1: Smart Contract Foundation & Access Control
-**Status:** ⬜ Not Started  
+**Status:** ✅ Complete  
 **Objective:** Initialize the Hardhat environment, install OpenZeppelin dependencies, and implement `EvidenceChainOfCustody.sol` with 5-tier role-based access control and comprehensive evidence registration with forensic metadata.  
 **Requirements:** REQ-01, REQ-02, NFR-01, NFR-04  
 
 **Plans:**
-- [ ] Plan 1.1: Project initialization: configure Hardhat, dependencies (`@openzeppelin/contracts`, `ethers`), and local EVM settings.
-- [ ] Plan 1.2: Implement `EvidenceChainOfCustody.sol` contract: role definitions (`ADMIN`, `COLLECTOR`, `CUSTODIAN`, `EXAMINER`, `AUDITOR`) and `registerEvidence` function.
-- [ ] Plan 1.3: Create automated Hardhat test suite validating role enforcement, metadata persistence, and duplicate rejection.
+- [x] Plan 1.1: Project initialization: configure Hardhat, dependencies (`@openzeppelin/contracts`, `ethers`), and local EVM settings.
+- [x] Plan 1.2: Implement `EvidenceChainOfCustody.sol` contract: role definitions (`ADMIN`, `COLLECTOR`, `CUSTODIAN`, `EXAMINER`, `AUDITOR`) and `registerEvidence` function.
+- [x] Plan 1.3: Create automated Hardhat test suite validating role enforcement, metadata persistence, and duplicate rejection.
+- [x] Plan 1.4: Hardhat EVM environment & dependency initialization (gap closure).
+- [x] Plan 1.5: EvidenceChainOfCustody Solidity contract implementation (gap closure).
+- [x] Plan 1.6: Automated Hardhat unit test suite with 20 passing tests (gap closure).
 
 ---
 
