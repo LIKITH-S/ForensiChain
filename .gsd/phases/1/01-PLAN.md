@@ -2,107 +2,115 @@
 phase: 1
 plan: 1
 wave: 1
+gap_closure: false
 depends_on: []
 files_modified:
-  - package.json
-  - hardhat.config.js
+  - chaincode/package.json
+  - chaincode/index.js
+  - chaincode/lib/roles.js
 autonomous: true
-gap_closure: false
 
 must_haves:
   truths:
-    - "Node.js environment is configured with Hardhat, ethers, and OpenZeppelin contracts"
-    - "Hardhat compilation pipeline runs natively on Windows with Solidity 0.8.24"
+    - "Chaincode project dependencies (fabric-contract-api, fabric-shim, mocha, chai, sinon) are installed and resolvable."
+    - "5-tier role authorization definitions (ADMINISTRATOR, COLLECTOR, CUSTODIAN, EXAMINER, AUDITOR) and identity attribute extraction helpers are defined."
   artifacts:
-    - "package.json"
-    - "hardhat.config.js"
+    - "chaincode/package.json exists with fabric-contract-api and test scripts"
+    - "chaincode/index.js exports EvidenceContract"
+    - "chaincode/lib/roles.js exports ROLES enum and assertHasRole helper"
 ---
 
-# Plan 1.1: Project Initialization & Hardhat EVM Setup
+# Plan 1.1: Hyperledger Fabric Chaincode Project Scaffolding & 5-Tier Role Definitions
 
 ## Objective
-Initialize the root Node.js project, install Hardhat, OpenZeppelin Contracts v5, and Hardhat Toolbox dependencies, and configure `hardhat.config.js` for native local EVM development and testing on Windows without external Docker requirements.
+Initialize the Node.js Hyperledger Fabric chaincode project structure inside `chaincode/` with `fabric-contract-api` and `fabric-shim`. Define the institutional 5-tier role-based access control (RBAC) constants (`ADMINISTRATOR`, `COLLECTOR`, `CUSTODIAN`, `EXAMINER`, `AUDITOR`) and helper methods for querying client identity certificate attributes via `ctx.clientIdentity`.
 
 ## Context
 Load these files for context:
 - .gsd/SPEC.md
 - .gsd/REQUIREMENTS.md
+- .gsd/ROADMAP.md
 - .gsd/DECISIONS.md
 
 ## Tasks
 
 <task type="auto">
-  <name>Initialize package.json and install Hardhat and OpenZeppelin dependencies</name>
+  <name>Initialize Chaincode Package and Install Dependencies</name>
   <files>
-    package.json
+    chaincode/package.json
   </files>
   <action>
-    Initialize the root `package.json` with project metadata and script commands (`compile`, `test`, `node`).
-    Install the required npm dependencies for local EVM development:
-    - `hardhat` (^2.22.0)
-    - `@openzeppelin/contracts` (^5.0.0)
-    - `@nomicfoundation/hardhat-toolbox` (^5.0.0)
-    - `ethers` (^6.13.0)
+    Create `chaincode/package.json` for the Hyperledger Fabric Node.js smart contract:
+    1. Define package name `evidence-chaincode`, version `1.0.0`, `main: "index.js"`.
+    2. Add production dependencies:
+       - `fabric-contract-api`: `^2.5.4`
+       - `fabric-shim`: `^2.5.4`
+    3. Add development dependencies for testing:
+       - `mocha`: `^10.3.0`
+       - `chai`: `^4.4.1`
+       - `sinon`: `^17.0.1`
+       - `sinon-chai`: `^3.7.0`
+    4. Configure scripts:
+       - `"start": "fabric-chaincode-node start"`
+       - `"test": "mocha test/**/*.test.js --timeout 5000"`
+    5. Run `npm install` inside the `chaincode/` directory.
 
-    Steps:
-    1. Create or initialize `package.json` with name "blockchain-evidence-chain-of-custody", version "1.0.0", private true.
-    2. Add standard npm scripts:
-       - `"compile": "hardhat compile"`
-       - `"test": "hardhat test"`
-       - `"node": "hardhat node"`
-    3. Run `npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox @openzeppelin/contracts ethers`.
-
-    AVOID: Installing global packages or introducing Docker/WSL dependencies.
-    USE: Native npm installation in the project workspace adhering to NFR-01 (Windows Native Execution).
+    AVOID: Installing heavy unneeded build dependencies or forcing insecure npm overrides.
+    USE: Node-compatible Fabric 2.5 LTS dependencies (`fabric-contract-api` and `fabric-shim`).
   </action>
   <verify>
-    node -e "require('@openzeppelin/contracts/package.json'); require('hardhat'); console.log('Dependencies verified successfully')"
+    npm --prefix chaincode list fabric-contract-api
   </verify>
   <done>
-    `package.json` contains `@openzeppelin/contracts`, `hardhat`, and `@nomicfoundation/hardhat-toolbox` under dependencies or devDependencies, and the verify command exits with status 0.
+    `chaincode/package.json` exists, `npm install` succeeds without fatal errors, and `fabric-contract-api` is present in `chaincode/node_modules`.
   </done>
 </task>
 
 <task type="auto">
-  <name>Configure hardhat.config.js with Solidity compiler and local network settings</name>
+  <name>Implement Role Authorization Module and Chaincode Entrypoint</name>
   <files>
-    hardhat.config.js
+    chaincode/lib/roles.js
+    chaincode/index.js
   </files>
   <action>
-    Create `hardhat.config.js` configuring the Solidity compiler version, optimizer settings, and network configurations.
+    1. Create `chaincode/lib/roles.js`:
+       - Define frozen object `ROLES`:
+         - `ADMINISTRATOR: 'ADMINISTRATOR'`
+         - `COLLECTOR: 'COLLECTOR'`
+         - `CUSTODIAN: 'CUSTODIAN'`
+         - `EXAMINER: 'EXAMINER'`
+         - `AUDITOR: 'AUDITOR'`
+       - Implement `getClientRole(clientIdentity)`: extracts the `'role'` attribute from `clientIdentity.getAttributeValue('role')`.
+       - Implement `getClientId(clientIdentity)`: returns `clientIdentity.getID()`.
+       - Implement `getClientMsp(clientIdentity)`: returns `clientIdentity.getMSPID()`.
+       - Implement `assertHasRole(clientIdentity, allowedRoles)`:
+         - Verifies that `clientIdentity` possesses a valid `'role'` attribute.
+         - Throws `new Error('Access denied: client certificate missing "role" attribute')` if missing.
+         - Throws `new Error(\`Access denied: role "\${role}" is not authorized for this operation. Required: \${allowedRoles.join(', ')}\`)` if the caller's role is not in `allowedRoles`.
+         - Returns the validated role.
+    2. Create `chaincode/index.js`:
+       - Import `./lib/EvidenceContract`.
+       - Export `module.exports.EvidenceContract = EvidenceContract;`
+       - Export `module.exports.contracts = [EvidenceContract];`
 
-    Steps:
-    1. Import `@nomicfoundation/hardhat-toolbox` at the top of `hardhat.config.js`.
-    2. Configure Solidity version `0.8.24` (compatible with OpenZeppelin Contracts v5).
-    3. Enable compiler optimization with `enabled: true, runs: 200`.
-    4. Configure networks:
-       - `hardhat`: Default local in-memory EVM network with standard chainId 31337.
-       - `localhost`: Configured for `http://127.0.0.1:8545` for standalone node execution.
-    5. Set default paths:
-       - `sources: "./contracts"`
-       - `tests: "./test"`
-       - `cache: "./cache"`
-       - `artifacts: "./artifacts"`
-    6. Ensure the `./contracts` and `./test` directories exist.
-
-    AVOID: Using deprecated hardhat plugins or Solidity versions below 0.8.20.
-    USE: Clean, standard `@nomicfoundation/hardhat-toolbox` configuration matching DECISION-001.
+    AVOID: Hardcoding role strings scattered across contract logic.
+    USE: Centralized `roles.js` module with explicit assertions providing clear diagnostic error messages on unauthorized access.
   </action>
   <verify>
-    npx hardhat compile
+    node -e "const { ROLES, assertHasRole } = require('./chaincode/lib/roles'); console.log(Object.keys(ROLES).length === 5 ? 'ROLES_OK' : 'FAIL')"
   </verify>
   <done>
-    `npx hardhat compile` executes without error, reporting successful compilation or ready status.
+    `chaincode/lib/roles.js` exports all 5 institutional roles and the `assertHasRole` function; `chaincode/index.js` defines the contract entrypoints.
   </done>
 </task>
 
 ## Must-Haves
 After all tasks complete, verify:
-- [ ] `package.json` exists with all required dependencies installed
-- [ ] `hardhat.config.js` is configured for Solidity 0.8.24 with optimizer enabled
-- [ ] `npx hardhat compile` succeeds natively on Windows
+- [ ] `chaincode/package.json` has `fabric-contract-api` installed in `node_modules`
+- [ ] `chaincode/lib/roles.js` exports `ADMINISTRATOR`, `COLLECTOR`, `CUSTODIAN`, `EXAMINER`, and `AUDITOR`
+- [ ] Role checking throws an error when the certificate lacks a `role` attribute or has an unauthorized role
 
 ## Success Criteria
 - [ ] All tasks verified passing
 - [ ] Must-haves confirmed
-- [ ] No compilation or dependency resolution errors
+- [ ] No regressions in tests

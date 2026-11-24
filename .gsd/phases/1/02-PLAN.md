@@ -2,140 +2,130 @@
 phase: 1
 plan: 2
 wave: 2
-depends_on: ["01"]
-files_modified:
-  - contracts/EvidenceChainOfCustody.sol
-autonomous: true
 gap_closure: false
+depends_on:
+  - "01"
+files_modified:
+  - chaincode/lib/EvidenceContract.js
+autonomous: true
 
 must_haves:
   truths:
-    - "EvidenceChainOfCustody defines the 5 institutional forensic roles: ADMIN_ROLE, COLLECTOR_ROLE, CUSTODIAN_ROLE, EXAMINER_ROLE, AUDITOR_ROLE"
-    - "Evidence registration accepts 13 forensic metadata fields encapsulated in an input struct"
-    - "Registration is restricted to accounts with COLLECTOR_ROLE"
-    - "Duplicate evidenceId registrations are rejected with custom error EvidenceAlreadyExists"
-    - "EvidenceRegistered event is emitted upon successful registration"
+    - "EvidenceContract extends Contract from fabric-contract-api."
+    - "registerEvidence enforces role authorization (COLLECTOR or ADMINISTRATOR) via ctx.clientIdentity."
+    - "registerEvidence persists all 13 forensic metadata fields to ledger state using ctx.stub.putState."
+    - "registerEvidence rejects registration if evidenceId already exists on ledger."
+    - "registerEvidence emits 'EvidenceRegistered' chaincode event using ctx.stub.setEvent."
+    - "getEvidence retrieves existing evidence records from ledger state and throws for unknown evidenceId."
   artifacts:
-    - "contracts/EvidenceChainOfCustody.sol"
+    - "chaincode/lib/EvidenceContract.js exists and implements registerEvidence, getEvidence, and evidenceExists"
 ---
 
-# Plan 1.2: Implement EvidenceChainOfCustody.sol RBAC and Evidence Registration
+# Plan 1.2: Evidence Chain of Custody Smart Contract & Registration Logic
 
 ## Objective
-Implement `contracts/EvidenceChainOfCustody.sol` with OpenZeppelin AccessControl establishing a 5-tier institutional role hierarchy (ADMIN, COLLECTOR, CUSTODIAN, EXAMINER, AUDITOR) and forensic evidence registration supporting all 13 intake metadata attributes, duplicate prevention, and immutable event emission.
+Implement `EvidenceContract` extending `Contract` from `fabric-contract-api`. Implement `registerEvidence` with strict 5-tier role enforcement via `ctx.clientIdentity` (requiring `COLLECTOR` or `ADMINISTRATOR`), duplicate primary key rejection via `ctx.stub.getState`, atomic state persistence of 13 forensic metadata fields via `ctx.stub.putState`, and audit event emission via `ctx.stub.setEvent`. Add read query methods (`getEvidence` and `evidenceExists`).
 
 ## Context
 Load these files for context:
 - .gsd/SPEC.md
 - .gsd/REQUIREMENTS.md
-- .gsd/DECISIONS.md
-- hardhat.config.js
+- .gsd/ROADMAP.md
+- chaincode/lib/roles.js
+- chaincode/index.js
 
 ## Tasks
 
 <task type="auto">
-  <name>Define Role hierarchy, custom errors, and events in EvidenceChainOfCustody.sol</name>
+  <name>Implement Evidence Registration Logic with 13 Forensic Metadata Fields</name>
   <files>
-    contracts/EvidenceChainOfCustody.sol
+    chaincode/lib/EvidenceContract.js
   </files>
   <action>
-    Create `contracts/EvidenceChainOfCustody.sol` inheriting `@openzeppelin/contracts/access/AccessControl.sol`.
+    Create `chaincode/lib/EvidenceContract.js`:
+    1. Import `Contract` from `fabric-contract-api` and `{ ROLES, assertHasRole }` from `./roles`.
+    2. Extend `Contract` with class `EvidenceContract`:
+       - Specify constructor calling `super('EvidenceChainOfCustodyContract')`.
+    3. Implement `async registerEvidence(ctx, metadataInput)`:
+       - Role authorization check: Enforce that caller's certificate possesses `COLLECTOR` or `ADMINISTRATOR` role via `assertHasRole(ctx.clientIdentity, [ROLES.COLLECTOR, ROLES.ADMINISTRATOR])`.
+       - Input parsing: Accept either a JSON string or an object. If a string, parse via `JSON.parse(metadataInput)`.
+       - Forensic metadata validation: Verify presence and format of required attributes:
+         - `evidenceId`: non-empty string.
+         - `caseId`: non-empty string.
+         - `sha256`: 64-character hexadecimal string matching `/^[a-fA-F0-9]{64}$/`.
+         - `fileSize`: positive integer (> 0).
+         - `mediaType`: non-empty string (e.g., `image/jpeg`, `application/octet-stream`).
+         - `storageObjectId`: non-empty string referencing off-chain vault identifier.
+         - `collectorId`: non-empty string identifying the forensic collector.
+         - `organizationId`: non-empty string identifying the collector agency/MSP.
+         - `collectedAt`: valid ISO 8601 date string.
+         - `location`: non-empty string describing collection location.
+         - `acquisitionMethod`: non-empty string (e.g., `physical_seizure`, `logical_extraction`, `memory_dump`).
+         - `toolVersion`: non-empty string identifying acquisition hardware/software tool.
+         - `parentEvidenceId`: optional string or null (empty string / null for primary original evidence, valid string for derivative evidence).
+       - Duplicate check: Query `const existing = await ctx.stub.getState(evidenceId)`. If `existing && existing.length > 0`, throw `new Error(\`Evidence with ID "\${evidenceId}" already exists on ledger\`)`.
+       - State assembly: Construct state record containing:
+         - All 13 metadata fields.
+         - `status`: `'REGISTERED'`
+         - `currentCustodian`: `metadata.collectorId`
+         - `registrationTxId`: `ctx.stub.getTxID()`
+         - `registeredAt`: new Date().toISOString()
+         - `chainOfCustody`: `[{ action: 'REGISTERED', actor: metadata.collectorId, organization: metadata.organizationId, timestamp: metadata.collectedAt, txId: ctx.stub.getTxID() }]`
+       - Persist to ledger: `await ctx.stub.putState(evidenceId, Buffer.from(JSON.stringify(evidenceRecord)))`.
+       - Emit audit event:
+         - Event name: `'EvidenceRegistered'`
+         - Payload: `Buffer.from(JSON.stringify({ evidenceId, caseId, sha256: metadata.sha256, collectorId: metadata.collectorId, timestamp: evidenceRecord.registeredAt, txId: ctx.stub.getTxID() }))`
+         - Call `ctx.stub.setEvent('EvidenceRegistered', payload)`.
+       - Return JSON string of the newly registered evidence record.
 
-    Steps:
-    1. Define SPDX license identifier (`MIT` or `Apache-2.0`) and pragma `solidity ^0.8.20`.
-    2. Import `@openzeppelin/contracts/access/AccessControl.sol`.
-    3. Define the 5 institutional forensic role identifiers as `bytes32 public constant`:
-       - `ADMIN_ROLE = DEFAULT_ADMIN_ROLE;` (0x00, manages role assignments)
-       - `COLLECTOR_ROLE = keccak256("COLLECTOR_ROLE");`
-       - `CUSTODIAN_ROLE = keccak256("CUSTODIAN_ROLE");`
-       - `EXAMINER_ROLE = keccak256("EXAMINER_ROLE");`
-       - `AUDITOR_ROLE = keccak256("AUDITOR_ROLE");`
-    4. Implement `constructor(address initialAdmin)` granting `DEFAULT_ADMIN_ROLE` and `ADMIN_ROLE` to `initialAdmin == address(0) ? msg.sender : initialAdmin`.
-    5. Define custom errors for validation:
-       - `error EvidenceAlreadyExists(string evidenceId);`
-       - `error EvidenceNotFound(string evidenceId);`
-       - `error EmptyEvidenceId();`
-       - `error EmptyHash();`
-       - `error InvalidCustodianAddress();`
-    6. Define `event EvidenceRegistered`:
-       - Parameters: `string indexed evidenceIdHash, string evidenceId, string caseId, string sha256Hash, address indexed custodian, address indexed registeredBy, uint256 registeredAt`.
-
-    AVOID: Using obsolete `onlyOwner` pattern or string-based role names without `keccak256`.
-    USE: OpenZeppelin v5 AccessControl with bytes32 role constants and custom errors for gas efficiency.
+    AVOID: Allowing unvalidated strings or missing SHA-256 format checks.
+    USE: Strict validation of forensic metadata attributes to align with BSA 2023 Section 63 electronic record certification standards.
   </action>
   <verify>
-    npx hardhat compile
+    node -e "const EC = require('./chaincode/lib/EvidenceContract'); const c = new EC(); console.log(typeof c.registerEvidence === 'function' ? 'REGISTER_OK' : 'FAIL')"
   </verify>
   <done>
-    `contracts/EvidenceChainOfCustody.sol` compiles cleanly with role constants, constructor, events, and custom errors defined.
+    `registerEvidence` is implemented, enforcing role authorization, validating all 13 forensic metadata fields, preventing duplicates, saving state to ledger, and setting the `EvidenceRegistered` event.
   </done>
 </task>
 
 <task type="auto">
-  <name>Implement forensic metadata struct, storage, and registerEvidence function</name>
+  <name>Implement Read and Query Methods with Role Authorization</name>
   <files>
-    contracts/EvidenceChainOfCustody.sol
+    chaincode/lib/EvidenceContract.js
   </files>
   <action>
-    Expand `contracts/EvidenceChainOfCustody.sol` to implement the evidence storage model and the `registerEvidence` function.
+    Add retrieval and existence check methods to `chaincode/lib/EvidenceContract.js`:
+    1. Implement `async evidenceExists(ctx, evidenceId)`:
+       - Validate `evidenceId` is non-empty string.
+       - Query `const evidenceBytes = await ctx.stub.getState(evidenceId)`.
+       - Return `evidenceBytes && evidenceBytes.length > 0`.
+    2. Implement `async getEvidence(ctx, evidenceId)`:
+       - Role authorization check: Allow all 5 authorized roles (`ADMINISTRATOR`, `COLLECTOR`, `CUSTODIAN`, `EXAMINER`, `AUDITOR`) via `assertHasRole(ctx.clientIdentity, Object.values(ROLES))`.
+       - Validate `evidenceId` is non-empty string.
+       - Query state: `const evidenceBytes = await ctx.stub.getState(evidenceId)`.
+       - If `!evidenceBytes || evidenceBytes.length === 0`, throw `new Error(\`Evidence "\${evidenceId}" does not exist on ledger\`)`.
+       - Return `JSON.parse(evidenceBytes.toString('utf8'))`.
 
-    Steps:
-    1. Define `struct Evidence` containing the full forensic lifecycle attributes:
-       - `string evidenceId`
-       - `string caseId`
-       - `string sha256Hash` (FIPS 180-4 64-hex string)
-       - `uint256 fileSize` (in bytes)
-       - `string mediaType` (MIME type)
-       - `string storageObjectId` (opaque vault identifier)
-       - `collectorId` (badge / agent ID)
-       - `string organizationId` (agency identifier)
-       - `uint256 collectedAt` (epoch timestamp)
-       - `string location` (GPS / location string)
-       - `string acquisitionMethod` (e.g., bitstream image)
-       - `string toolVersion` (e.g., dd v8.32)
-       - `string parentEvidenceId` (optional parent for derivatives)
-       - `address custodian` (current active custodian)
-       - `address registeredBy` (collector address)
-       - `uint256 registeredAtBlock` (block.timestamp)
-    2. Define `struct RegistrationParams` encapsulating the 13 intake attributes plus `address initialCustodian`.
-    3. Define state mappings and index tracking:
-       - `mapping(string => Evidence) private _evidenceRegistry;`
-       - `mapping(string => bool) private _evidenceExists;`
-       - `string[] private _evidenceIds;`
-    4. Implement `function registerEvidence(RegistrationParams calldata params) external onlyRole(COLLECTOR_ROLE)`:
-       - Check `bytes(params.evidenceId).length > 0`, revert with `EmptyEvidenceId()` if empty.
-       - Check `bytes(params.sha256Hash).length > 0`, revert with `EmptyHash()` if empty.
-       - Check `!_evidenceExists[params.evidenceId]`, revert with `EvidenceAlreadyExists(params.evidenceId)` if already present.
-       - Determine initial custodian: `params.initialCustodian != address(0) ? params.initialCustodian : msg.sender`.
-       - Store `Evidence` struct in `_evidenceRegistry[params.evidenceId]`.
-       - Set `_evidenceExists[params.evidenceId] = true`.
-       - Append `params.evidenceId` to `_evidenceIds`.
-       - Emit `EvidenceRegistered` event.
-    5. Implement public view getters:
-       - `function getEvidence(string calldata evidenceId) external view returns (Evidence memory)` (reverts with `EvidenceNotFound` if not exists).
-       - `function evidenceExists(string calldata evidenceId) external view returns (bool)`.
-       - `function getEvidenceCount() external view returns (uint256)`.
-       - `function getEvidenceIdByIndex(uint256 index) external view returns (string memory)`.
-
-    AVOID: Passing 13+ raw individual parameters directly to `registerEvidence`, which triggers Solidity EVM "Stack too deep" compiler errors.
-    USE: The `RegistrationParams` input struct to encapsulate intake metadata cleanly.
+    AVOID: Allowing unauthenticated or role-less callers to read evidence metadata from the ledger.
+    USE: Consistent error messages when evidence is not found.
   </action>
   <verify>
-    npx hardhat compile
+    node -e "const EC = require('./chaincode/lib/EvidenceContract'); const c = new EC(); console.log(typeof c.getEvidence === 'function' && typeof c.evidenceExists === 'function' ? 'QUERY_OK' : 'FAIL')"
   </verify>
   <done>
-    `npx hardhat compile` completes with 0 errors and generates artifacts for `EvidenceChainOfCustody`.
+    `getEvidence` and `evidenceExists` are implemented on `EvidenceContract`, enforcing role verification and correctly returning ledger records.
   </done>
 </task>
 
 ## Must-Haves
 After all tasks complete, verify:
-- [ ] `EvidenceChainOfCustody.sol` compiles cleanly under Solidity 0.8.24
-- [ ] 5 roles defined: `ADMIN_ROLE`, `COLLECTOR_ROLE`, `CUSTODIAN_ROLE`, `EXAMINER_ROLE`, `AUDITOR_ROLE`
-- [ ] `registerEvidence` enforces `COLLECTOR_ROLE` and rejects duplicate IDs
-- [ ] `getEvidence` returns all 13 forensic metadata fields + custody information
+- [ ] `EvidenceContract` extends `Contract` and can be instantiated without runtime errors
+- [ ] `registerEvidence` rejects callers lacking `COLLECTOR` or `ADMINISTRATOR` roles
+- [ ] `registerEvidence` writes complete evidence records to ledger state and emits `EvidenceRegistered` event
+- [ ] `getEvidence` returns the evidence state record or throws an error if not found
 
 ## Success Criteria
-- [ ] All tasks verified passing via `npx hardhat compile`
+- [ ] All tasks verified passing
 - [ ] Must-haves confirmed
-- [ ] No compilation warnings or EVM stack errors
+- [ ] No regressions in tests
