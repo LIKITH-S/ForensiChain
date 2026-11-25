@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ActorProvider, useActor } from "./context/ActorContext";
 import RoleSwitcher from "./components/RoleSwitcher";
 import CaseDashboard from "./components/CaseDashboard";
+import EvidencePassport from "./components/EvidencePassport";
 import { listCases, listEvidence } from "./api/client";
 import {
   ShieldCheck,
@@ -177,26 +178,14 @@ function MainApp() {
         )}
 
         {activeTab === "passport" && (
-          <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-3">
-            <FileBadge className="w-12 h-12 text-blue-400 mx-auto opacity-70" />
-            <h3 className="text-lg font-semibold text-white">Evidence Integrity Passport</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
-              Plan 4.2 wires the complete Evidence Integrity Passport dossier, dual-timestamp vertical custody timeline, and two-party handover manager.
-            </p>
-            {selectedEvidenceId && (
-              <p className="text-xs font-mono text-emerald-400 bg-emerald-500/10 p-2 rounded-lg inline-block border border-emerald-500/20">
-                Selected: {selectedEvidenceId}
-              </p>
-            )}
-            <div className="pt-2">
-              <button
-                onClick={() => setActiveTab("cases")}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300"
-              >
-                Back to Cases
-              </button>
-            </div>
-          </div>
+          <EvidencePassport
+            evidenceId={selectedEvidenceId || (evidenceList[0]?.metadata?.evidenceId)}
+            evidenceList={evidenceList}
+            onSelectEvidence={setSelectedEvidenceId}
+            onOpenVerify={handleOpenVerify}
+            onOpenAuditReport={handleOpenAuditReport}
+            onRefreshAll={() => setRefreshTrigger((t) => t + 1)}
+          />
         )}
 
         {activeTab === "verify" && (
