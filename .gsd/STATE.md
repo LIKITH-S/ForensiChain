@@ -7,24 +7,21 @@ updated: 2026-11-25T20:14:00+05:30
 ## Current Position
 
 **Milestone:** v1.0
-**Phase:** 3 - Off-Chain Evidence Vault & Backend API Layer
-**Status:** complete
-**Plan:** All Phase 3 plans complete (3.1, 3.2, 3.3). Ready for Phase 4 planning.
+**Phase:** 4 - Full-Stack Web Application (Evidence Passport & Audit Portal)
+**Status:** ready-to-execute
+**Plan:** Ready for Plan 4.1 (Run `/execute 4` to begin execution)
 
 ## Last Action
 
-Phase 3 fully implemented and verified (77 Hardhat tests passing):
-- `backend/vault/evidenceVault.js` (streaming SHA-256 + AES-256-GCM vault)
-- `scripts/deploy.js` (EVM contract deployer + role config generator)
-- `backend/services/blockchainAdapter.js` (EVM adapter with JSON-safe normalization and error handling)
-- `backend/services/caseStore.js` (case management and Section 63 BSA compliance)
-- `backend/server.js` (REST API with multipart upload, custody management, verification, audit reports)
-- `test/VaultAndApi.test.js` (24 integration tests verifying REST API)
+Phase 4 planned into 3 atomic plans across 3 execution waves:
+- `01-PLAN.md` (Wave 1): Frontend Scaffolding, Role Switcher (Persona Simulator) & Case/Evidence Intake Dashboard.
+- `02-PLAN.md` (Wave 2): Evidence Integrity Passport & Two-Party Custody Handover Portal with interactive timeline.
+- `03-PLAN.md` (Wave 3): Drag-and-Drop Integrity Verifier (PASS/MISMATCH), BSA 2023 Section 63 Legal Audit Report, and Vitest/Vite production build verification.
 
 ## Next Steps
 
-1. Run `/plan 4` for Phase 4: Full-Stack Web Application (Evidence Passport & Audit Portal).
-2. Scaffold Vite + React + Tailwind frontend application.
+1. Run `/execute 4` to execute all plans for Phase 4.
+2. Build frontend React components, verify with Vitest, and test against Express API.
 
 ## Active Decisions
 
