@@ -6,21 +6,21 @@ updated: 2026-11-23T23:16:00+05:30
 
 # Roadmap
 
-> **Current Phase:** Not started
-> **Status:** planning
+> **Current Phase:** Complete  
+> **Status:** complete
 
 ## Must-Haves (from SPEC & Blueprint)
 
-- [ ] Smart contract `EvidenceChainOfCustody.sol` with OpenZeppelin AccessControl (Admin, Collector, Custodian, Examiner, Auditor)
-- [ ] Evidence metadata struct with forensic attributes (`evidenceId`, `caseId`, `sha256`, `storageObjectId`, `collectorId`, `acquisitionMethod`, `parentEvidenceId`)
-- [ ] Two-party custody transfer protocol (`proposeTransfer`, `acceptTransfer`, `rejectTransfer`)
-- [ ] Immutable event logging for evidence lifecycle and access auditing
-- [ ] Independent SHA-256 verification recording `PASS` or `MISMATCH` events on-chain
+- [x] Smart contract `EvidenceChainOfCustody.sol` with OpenZeppelin AccessControl (Admin, Collector, Custodian, Examiner, Auditor)
+- [x] Evidence metadata struct with forensic attributes (`evidenceId`, `caseId`, `sha256`, `storageObjectId`, `collectorId`, `acquisitionMethod`, `parentEvidenceId`)
+- [x] Two-party custody transfer protocol (`proposeTransfer`, `acceptTransfer`, `rejectTransfer`)
+- [x] Immutable event logging for evidence lifecycle and access auditing
+- [x] Independent SHA-256 verification recording `PASS` or `MISMATCH` events on-chain
 - [x] Secure off-chain evidence vault with streaming SHA-256 hashing
 - [x] Node.js + Express API server with blockchain adapter layer
 - [x] Full-Stack Web Application with "Evidence Integrity Passport" and interactive custody timeline
 - [x] Downloadable audit report with BSA 2023 Section 63 electronic evidence metadata support
-- [ ] Automated testing and end-to-end demonstration scripts (register &rarr; transfer &rarr; verify &rarr; tamper &rarr; audit)
+- [x] Automated testing and end-to-end demonstration scripts (register &rarr; transfer &rarr; verify &rarr; tamper &rarr; audit)
 
 ---
 
@@ -81,12 +81,12 @@ updated: 2026-11-23T23:16:00+05:30
 ---
 
 ### Phase 5: End-to-End Verification, Demonstration Scenarios & Polish
-**Status:** ⬜ Not Started  
+**Status:** ✅ Complete  
 **Objective:** Deploy the full system locally, seed realistic forensic test cases (CCTV, disk dump, emails), run the complete demonstration lifecycle, and document verification proofs.  
 **Requirements:** REQ-11  
 **Depends on:** Phase 4  
 
 **Plans:**
-- [ ] Plan 5.1: Create automated setup and realistic seed script (creates cases, registers sample files, executes custody handover).
-- [ ] Plan 5.2: Execute tamper demonstration scenario (original file MATCH vs. tampered file byte-flip MISMATCH with alert).
-- [ ] Plan 5.3: Document complete user guide, architecture diagrams, and legal/evidentiary compliance boundaries.
+- [x] Plan 5.1: Create automated setup and realistic seed script (creates cases, registers sample files, executes custody handover).
+- [x] Plan 5.2: Execute tamper demonstration scenario (original file MATCH vs. tampered file byte-flip MISMATCH with alert).
+- [x] Plan 5.3: Document complete user guide, architecture diagrams, and legal/evidentiary compliance boundaries.

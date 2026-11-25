@@ -7,8 +7,16 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "node": "hardhat node",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "start:api": "node backend/server.js",
+    "seed": "node scripts/seed.js",
+    "demo:tamper": "node scripts/tamper-demo.js",
+    "start:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "test:frontend": "npm --prefix frontend test",
     "test:chaincode": "npm --prefix chaincode test",
-    "start:api": "node backend/server.js"
+    "start:full": "node scripts/start-full.js",
+    "test:all": "node -e \"const {execSync}=require('child_process'); for(const cmd of ['npx hardhat test','npm --prefix chaincode test','npm --prefix frontend test','npm --prefix frontend run build']) execSync(cmd,{stdio:'inherit'})\""
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
