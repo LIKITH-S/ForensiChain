@@ -12,6 +12,8 @@ const { EvidenceVault } = require("../backend/vault/evidenceVault");
 const { CaseStore } = require("../backend/services/caseStore");
 const { createApp } = require("../backend/server");
 const { seedForensicSystem } = require("../scripts/seed");
+const { runTamperDemonstration } = require("../scripts/tamper-demo");
+const { VaultIntegrityError } = require("../backend/vault/evidenceVault");
 
 describe("End-to-End Forensic Chain-of-Custody Lifecycle Suite", function () {
   this.timeout(45000);
@@ -351,6 +353,54 @@ describe("End-to-End Forensic Chain-of-Custody Lifecycle Suite", function () {
 
       expect(result2.cases.length).to.equal(2);
       expect(result2.evidence.length).to.equal(4);
+    });
+  });
+
+  describe("Byte-Level Tamper Demonstration & Ledger Alert Proof", function () {
+    it("Proves unaltered PASS, single-bit flip on-chain MISMATCH alert, AES-256-GCM ciphertext rejection, and BSA 63 report flagging", async function () {
+      const proof = await runTamperDemonstration({
+        adapter: blockchainAdapter,
+        vault,
+        caseStore,
+        quiet: true
+      });
+
+      // 1. Unaltered baseline verification
+      expect(proof.passResult.isMatch).to.be.true;
+      expect(proof.passResult.result).to.equal("PASS");
+      expect(proof.passResult.message).to.equal("Hash matches registered baseline");
+
+      // 2. Single-byte payload flip tamper detection
+      expect(proof.tamperedSha256).to.not.equal(proof.baselineSha256);
+      expect(proof.tamperedSha256).to.have.lengthOf(64);
+      expect(proof.mismatchResult.isMatch).to.be.false;
+      expect(proof.mismatchResult.result).to.equal("MISMATCH");
+      expect(proof.mismatchResult.message).to.include("HASH MISMATCH ALERT");
+
+      // 3. Immutable on-chain event proof
+      expect(proof.verificationHistory.length).to.be.at.least(2);
+      const passEvent = proof.verificationHistory.find((v) => v.isMatch === true);
+      const mismatchEvent = proof.verificationHistory.find((v) => v.isMatch === false);
+      expect(passEvent).to.be.ok;
+      expect(mismatchEvent).to.be.ok;
+      expect(passEvent.observedSha256).to.equal(proof.baselineSha256);
+      expect(mismatchEvent.observedSha256).to.equal(proof.tamperedSha256);
+
+      // 4. AES-256-GCM vault ciphertext tamper rejection
+      expect(proof.ciphertextTamperError).to.exist;
+      expect(proof.ciphertextTamperError.code).to.equal("VAULT_CIPHERTEXT_TAMPERED");
+      expect(proof.ciphertextTamperError.statusCode).to.equal(422);
+
+      // 5. BSA Section 63 audit report flags the tamper alert
+      const reportRes = await request(app)
+        .get(`/api/cases/${proof.caseId}/audit-report`)
+        .expect(200);
+
+      const tamperDoc = reportRes.body.evidenceRecords.find(
+        (e) => (e.evidence.metadata?.evidenceId || e.evidence.evidenceId) === proof.evidenceId
+      );
+      expect(tamperDoc).to.be.ok;
+      expect(tamperDoc.verificationHistory.some((v) => v.isMatch === false)).to.be.true;
     });
   });
 });
