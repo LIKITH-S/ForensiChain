@@ -42,15 +42,15 @@ updated: 2026-11-23T23:16:00+05:30
 ---
 
 ### Phase 2: Custody Transfer Protocol & Integrity Verification
-**Status:** ⬜ Not Started  
+**Status:** ✅ Complete  
 **Objective:** Implement the two-party custody transfer state machine, access audit logging, and on-chain evidence integrity verification with tamper alerting.  
 **Requirements:** REQ-03, REQ-04, REQ-05, NFR-03  
 **Depends on:** Phase 1  
 
 **Plans:**
-- [ ] Plan 2.1: Implement two-party transfer logic: `proposeTransfer`, `acceptTransfer`, `rejectTransfer`, and transfer state tracking.
-- [ ] Plan 2.2: Implement `recordAccess` and `verifyIntegrity` functions that log `PASS` / `MISMATCH` events on-chain.
-- [ ] Plan 2.3: Comprehensive unit tests proving valid transfers, unauthorized transfers blocked, intact file verification, and tampered file detection.
+- [x] Plan 2.1: Implement two-party transfer logic: `proposeTransfer`, `acceptTransfer`, `rejectTransfer`, and transfer state tracking.
+- [x] Plan 2.2: Implement `recordAccess` and `verifyIntegrity` functions that log `PASS` / `MISMATCH` events on-chain.
+- [x] Plan 2.3: Comprehensive unit tests proving valid transfers, unauthorized transfers blocked, intact file verification, and tampered file detection.
 
 ---
 
