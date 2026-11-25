@@ -16,8 +16,8 @@ updated: 2026-11-23T23:16:00+05:30
 - [ ] Two-party custody transfer protocol (`proposeTransfer`, `acceptTransfer`, `rejectTransfer`)
 - [ ] Immutable event logging for evidence lifecycle and access auditing
 - [ ] Independent SHA-256 verification recording `PASS` or `MISMATCH` events on-chain
-- [ ] Secure off-chain evidence vault with streaming SHA-256 hashing
-- [ ] Node.js + Express API server with blockchain adapter layer
+- [x] Secure off-chain evidence vault with streaming SHA-256 hashing
+- [x] Node.js + Express API server with blockchain adapter layer
 - [ ] Full-Stack Web Application with "Evidence Integrity Passport" and interactive custody timeline
 - [ ] Downloadable audit report with BSA 2023 Section 63 electronic evidence metadata support
 - [ ] Automated testing and end-to-end demonstration scripts (register &rarr; transfer &rarr; verify &rarr; tamper &rarr; audit)
@@ -55,15 +55,15 @@ updated: 2026-11-23T23:16:00+05:30
 ---
 
 ### Phase 3: Off-Chain Evidence Vault & Backend API Layer
-**Status:** ⬜ Not Started  
+**Status:** ✅ Complete  
 **Objective:** Build the secure off-chain evidence vault with streaming SHA-256 calculation, and the Node.js / Express API with a pluggable blockchain adapter.  
 **Requirements:** REQ-06, REQ-07, NFR-02  
 **Depends on:** Phase 2  
 
 **Plans:**
-- [ ] Plan 3.1: Build streaming file upload and encrypted storage service (`EvidenceVault`) using Node.js `crypto`.
-- [ ] Plan 3.2: Implement Express REST API endpoints (`/api/cases`, `/api/evidence`, `/api/transfers`, `/api/verify`, `/api/audit-report`) and blockchain adapter service.
-- [ ] Plan 3.3: Integration tests for API upload, hash generation, ledger submission, and file retrieval.
+- [x] Plan 3.1: Build streaming file upload and encrypted storage service (`EvidenceVault`) using Node.js `crypto`.
+- [x] Plan 3.2: Implement Express REST API endpoints (`/api/cases`, `/api/evidence`, `/api/transfers`, `/api/verify`, `/api/audit-report`) and blockchain adapter service.
+- [x] Plan 3.3: Integration tests for API upload, hash generation, ledger submission, and file retrieval.
 
 ---
 
