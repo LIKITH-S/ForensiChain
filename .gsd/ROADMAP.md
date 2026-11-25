@@ -18,8 +18,8 @@ updated: 2026-11-23T23:16:00+05:30
 - [ ] Independent SHA-256 verification recording `PASS` or `MISMATCH` events on-chain
 - [x] Secure off-chain evidence vault with streaming SHA-256 hashing
 - [x] Node.js + Express API server with blockchain adapter layer
-- [ ] Full-Stack Web Application with "Evidence Integrity Passport" and interactive custody timeline
-- [ ] Downloadable audit report with BSA 2023 Section 63 electronic evidence metadata support
+- [x] Full-Stack Web Application with "Evidence Integrity Passport" and interactive custody timeline
+- [x] Downloadable audit report with BSA 2023 Section 63 electronic evidence metadata support
 - [ ] Automated testing and end-to-end demonstration scripts (register &rarr; transfer &rarr; verify &rarr; tamper &rarr; audit)
 
 ---
@@ -68,16 +68,15 @@ updated: 2026-11-23T23:16:00+05:30
 ---
 
 ### Phase 4: Full-Stack Web Application (Evidence Passport & Audit Portal)
-**Status:** ⬜ Not Started  
+**Status:** ✅ Complete  
 **Objective:** Develop the modern React + Tailwind CSS web application featuring the Evidence Integrity Passport, custody handover manager, drag-and-drop verifier, and BSA Section 63 audit export.  
 **Requirements:** REQ-08, REQ-09, REQ-10, NFR-05  
 **Depends on:** Phase 3  
 
 **Plans:**
-- [ ] Plan 4.1: Scaffold React / Vite / Tailwind frontend with Web3 wallet connector and role-switcher / multi-persona simulation.
-- [ ] Plan 4.2: Build Evidence Registration & Case Management dashboard.
-- [ ] Plan 4.3: Build Two-Party Custody Handover dashboard (propose transfer, pending transfer review, accept/reject actions).
-- [ ] Plan 4.4: Build Evidence Integrity Passport view with interactive timeline, drag-and-drop file verifier, and BSA audit report generator.
+- [x] Plan 4.1: Frontend Scaffolding, Role Switcher (Persona Simulator) & Case/Evidence Intake Dashboard.
+- [x] Plan 4.2: Evidence Integrity Passport & Two-Party Custody Handover Portal with vertical custody timeline.
+- [x] Plan 4.3: Cryptographic Verifier (PASS/MISMATCH), BSA 2023 Section 63 Legal Audit Report, and Vitest test suite.
 
 ---
 

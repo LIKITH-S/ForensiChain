@@ -3,6 +3,8 @@ import { ActorProvider, useActor } from "./context/ActorContext";
 import RoleSwitcher from "./components/RoleSwitcher";
 import CaseDashboard from "./components/CaseDashboard";
 import EvidencePassport from "./components/EvidencePassport";
+import IntegrityVerifier from "./components/IntegrityVerifier";
+import AuditReportView from "./components/AuditReportView";
 import { listCases, listEvidence } from "./api/client";
 import {
   ShieldCheck,
@@ -189,39 +191,20 @@ function MainApp() {
         )}
 
         {activeTab === "verify" && (
-          <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-3">
-            <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto opacity-70" />
-            <h3 className="text-lg font-semibold text-white">Cryptographic Integrity Verifier</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
-              Plan 4.3 wires the drag-and-drop cryptographic verifier with instant visual PASS (green shield) and HASH MISMATCH ALERT (tamper detection).
-            </p>
-            <div className="pt-2">
-              <button
-                onClick={() => setActiveTab("cases")}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300"
-              >
-                Back to Cases
-              </button>
-            </div>
-          </div>
+          <IntegrityVerifier
+            evidenceId={selectedEvidenceId || (evidenceList[0]?.metadata?.evidenceId)}
+            evidenceList={evidenceList}
+            onSelectEvidence={setSelectedEvidenceId}
+            onVerified={() => setRefreshTrigger((t) => t + 1)}
+          />
         )}
 
         {activeTab === "audit" && (
-          <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-3">
-            <FileText className="w-12 h-12 text-cyan-400 mx-auto opacity-70" />
-            <h3 className="text-lg font-semibold text-white">BSA 2023 Section 63 Legal Audit Report</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
-              Plan 4.3 wires the printable electronic record audit certificate with complete chain of custody logs, NIST FIPS 180-4 standard, and Print/PDF export.
-            </p>
-            <div className="pt-2">
-              <button
-                onClick={() => setActiveTab("cases")}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300"
-              >
-                Back to Cases
-              </button>
-            </div>
-          </div>
+          <AuditReportView
+            cases={cases}
+            selectedCaseId={selectedCaseId}
+            onSelectCase={setSelectedCaseId}
+          />
         )}
       </main>
 

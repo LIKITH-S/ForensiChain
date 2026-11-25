@@ -8,20 +8,27 @@ updated: 2026-11-25T20:14:00+05:30
 
 **Milestone:** v1.0
 **Phase:** 4 - Full-Stack Web Application (Evidence Passport & Audit Portal)
-**Status:** ready-to-execute
-**Plan:** Ready for Plan 4.1 (Run `/execute 4` to begin execution)
+**Status:** complete
+**Plan:** All Phase 4 plans complete (4.1, 4.2, 4.3). Ready for Phase 5.
 
 ## Last Action
 
-Phase 4 planned into 3 atomic plans across 3 execution waves:
-- `01-PLAN.md` (Wave 1): Frontend Scaffolding, Role Switcher (Persona Simulator) & Case/Evidence Intake Dashboard.
-- `02-PLAN.md` (Wave 2): Evidence Integrity Passport & Two-Party Custody Handover Portal with interactive timeline.
-- `03-PLAN.md` (Wave 3): Drag-and-Drop Integrity Verifier (PASS/MISMATCH), BSA 2023 Section 63 Legal Audit Report, and Vitest/Vite production build verification.
+Phase 4 fully implemented and verified:
+- `frontend/src/context/ActorContext.jsx` & `frontend/src/components/RoleSwitcher.jsx` (Role Switcher / Persona Simulator)
+- `frontend/src/api/client.js` (API client with `x-actor-role` injection)
+- `frontend/src/components/CaseDashboard.jsx` (Case directory, CreateCaseModal, Evidence Registry table)
+- `frontend/src/components/RegisterEvidenceModal.jsx` (Drag-and-drop streaming evidence intake)
+- `frontend/src/components/EvidencePassport.jsx` (Complete evidence passport dossier & action bar)
+- `frontend/src/components/CustodyTimeline.jsx` (Vertical timeline with dual timestamps)
+- `frontend/src/components/CustodyHandoverPanel.jsx` (Two-party custody transfer: propose, accept, reject, cancel)
+- `frontend/src/components/IntegrityVerifier.jsx` (Drag-and-drop file verifier, vault re-hashing, PASS/MISMATCH alerts)
+- `frontend/src/components/AuditReportView.jsx` (Printable BSA Section 63 audit certificate, PDF & JSON export)
+- `frontend/src/App.test.jsx` (5 automated integration tests in Vitest passing 100%)
 
 ## Next Steps
 
-1. Run `/execute 4` to execute all plans for Phase 4.
-2. Build frontend React components, verify with Vitest, and test against Express API.
+1. Run `/plan 5` for Phase 5: End-to-End Verification, Demonstration Scenarios & Polish.
+2. Author automated seed scripts, tamper demonstration scenario, and architectural user guide.
 
 ## Active Decisions
 

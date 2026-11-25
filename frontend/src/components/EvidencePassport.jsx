@@ -10,6 +10,7 @@ import {
 } from "../utils/formatters";
 import CustodyTimeline from "./CustodyTimeline";
 import CustodyHandoverPanel from "./CustodyHandoverPanel";
+import IntegrityVerifier from "./IntegrityVerifier";
 import {
   FileBadge,
   Download,
@@ -457,9 +458,28 @@ export default function EvidencePassport({
           >
             Verification History ({verificationHistory.length})
           </button>
+
+          <button
+            onClick={() => setActiveTab("verify")}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === "verify"
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Verify Integrity Check
+          </button>
         </div>
 
         <div className="p-6">
+          {activeTab === "verify" && (
+            <IntegrityVerifier
+              evidenceId={evidenceId}
+              onVerified={fetchDossier}
+              embedded
+            />
+          )}
+
           {activeTab === "timeline" && (
             <CustodyTimeline
               custodyHistory={custodyHistory}
