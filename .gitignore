@@ -32,9 +32,9 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Evidence Vault & File Upload Data (Sensitive Evidence Stays Off-Chain)
-vault/
-storage/
-uploads/
+/vault/
+/storage/
+/uploads/
 *.tmp
 
 # Operating System Files
