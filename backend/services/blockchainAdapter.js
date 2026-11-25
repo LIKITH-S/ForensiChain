@@ -115,7 +115,7 @@ class BlockchainAdapter {
     const contract = new ethers.Contract(contractAddress, artifact.abi, provider);
 
     const signers = {};
-    const roleKeys = ["ADMIN", "COLLECTOR", "CUSTODIAN", "CUSTODIAN_SECONDARY", "EXAMINER", "AUDITOR", "UNAUTHORIZED"];
+    const roleKeys = ["ADMIN", "COLLECTOR", "CUSTODIAN", "EXAMINER", "AUDITOR", "CUSTODIAN_SECONDARY", "UNAUTHORIZED"];
 
     for (let i = 0; i < roleKeys.length; i++) {
       const role = roleKeys[i];
@@ -123,10 +123,22 @@ class BlockchainAdapter {
       if (pk) {
         signers[role] = new ethers.Wallet(pk, provider);
       } else {
-        try {
-          signers[role] = await provider.getSigner(i);
-        } catch {
-          // Fallback if index not available
+        const deployedRoleAddr = deployment?.roles?.[role];
+        let resolved = false;
+        if (deployedRoleAddr && ethers.isAddress(deployedRoleAddr) && deployedRoleAddr !== ethers.ZeroAddress) {
+          try {
+            signers[role] = await provider.getSigner(deployedRoleAddr);
+            resolved = true;
+          } catch {
+            // fallback to index-based resolution
+          }
+        }
+        if (!resolved) {
+          try {
+            signers[role] = await provider.getSigner(i);
+          } catch {
+            // Fallback if index not available
+          }
         }
       }
     }

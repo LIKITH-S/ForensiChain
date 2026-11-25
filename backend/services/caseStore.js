@@ -12,7 +12,7 @@ class CaseStoreError extends Error {
 
 class CaseStore {
   constructor(options = {}) {
-    this.storeFile = options.storeFile || path.resolve(process.cwd(), "vault", "cases.json");
+    this.storeFile = options.storeFile || options.filePath || path.resolve(process.cwd(), "vault", "cases.json");
     const dir = path.dirname(this.storeFile);
     fs.mkdirSync(dir, { recursive: true });
 
