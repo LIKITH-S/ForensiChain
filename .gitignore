@@ -56,5 +56,16 @@ build/
 .next/
 out/
 
-# Gemini / Antigravity Local Workspace Cache
+# Gemini, Agent & Developer Assistance Frameworks
 .gemini/
+.gsd/
+.agent/
+.agents/
+adapters/
+docs/
+GSD-STYLE.md
+PROJECT_RULES.md
+model_capabilities.yaml
+scripts/search_repo.*
+scripts/setup_search.*
+scripts/validate-*
